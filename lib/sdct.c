@@ -85,7 +85,7 @@ void SDCT( hSDCT h, float* data, float** result ){
 }
 */    
 
-void SDCT( hSDCT h, float* data, float** result ){
+void SDCT( hSDCT h, sux_Window window, float* data, float** result ){
     int i, its, ifr, hw, neg1;
     float val, fact, cosfact;
     float frp1, fr, fmr, fmrm1;
@@ -120,12 +120,16 @@ void SDCT( hSDCT h, float* data, float** result ){
             neg1 *= -1;
         }
     }
+    
+/* Apply the window in the transform domain */
+    windowSDCT( h, window, result );
     for (its=0; its<ns; its++)
         result[0][its] = result[0][its] / sqrt(2.0);
 }
 
 
 void windowSDCT( hSDCT h, sux_Window window, float** data ) {
+    if ( window==None ) return;
     float a0, a1, a2;
     float cm2, cp2, cm4, cp4;
     int its, ifr;
@@ -164,6 +168,7 @@ void windowSDCT( hSDCT h, sux_Window window, float** data ) {
         }
         for ( ifr=0; ifr<nwin; ifr++ )
             data[ifr][its] = work[ifr];
+        
     }
     free1float(work);
 }

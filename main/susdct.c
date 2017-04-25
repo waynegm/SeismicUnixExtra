@@ -19,6 +19,10 @@ char *sdoc[] = {
 "                                                                   ",
 " Optional parameters:                                              ",
 " nwin=31           number (odd) of samples in SDFT window          ",
+" window=none       window applied to each data segment             ",
+"       =hann       Hann window                                     ",
+"       =hamming    Hamming window                                  ",
+"       =blackman   Blackman window                                 ",
 " verbose=0         no advisory messages                            ",
 "         1         for advisory messages                           ",
 "                                                                   ",
@@ -46,6 +50,8 @@ main(int argc, char **argv)
     float dt;
     int nwin;
     int verbose;
+    cwp_String window;
+    sux_Window iwind = None;
 
     int nt;
     float df;
@@ -75,6 +81,13 @@ main(int argc, char **argv)
         if (verbose)
             warn("adjusting nwin to be odd, was %d now %d",nwin-1, nwin);
     }
+    if (!getparstring("window", &window)) window = "none";
+    if      (STREQ(window, "hann")) iwind = Hann;
+    else if (STREQ(window, "hamming")) iwind = Hamming;
+    else if (STREQ(window, "blackman")) iwind = Blackman;
+    else if (!STREQ(window, "none")) 
+        err("unknown window=\"%s\", see self-doc", window);
+    
     
 /* Set up DCT parameters and workspaces */
     df = 1.0/(2.0*nwin*dt);
@@ -90,8 +103,7 @@ main(int argc, char **argv)
                 warn("ignoring input trace=%d with non-seismic trcid=%d", tr.tracl, tr.trid);
             continue;
         }
-        SDCT( dctHandle, tr.data, specbuff );
-        windowSDCT( dctHandle, Blackman, specbuff );
+        SDCT( dctHandle, iwind, tr.data, specbuff );
         tracr = 0;
         for ( i=0; i<nf; i++ ) {
             for (j=0; j<nt; j++)
