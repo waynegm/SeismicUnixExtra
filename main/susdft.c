@@ -19,10 +19,15 @@ char *sdoc[] = {
 "                                                                   ",
 " Optional parameters:                                              ",
 " nwin=31           number (odd) of samples in SDFT window          ",
-" mode=amp          output spectral amplitude                       ",
+" mode=complex      output complex spectra                          ",
+"     =amp          output spectral amplitude                       ",
 "     =phase        output spectral phase                           ",
 "     =real         output real part                                ",
 "     =imag         output imaginary part                           ",
+" window=none       window applied to each data segment             ",
+"       =hann       Hann window                                     ",
+"       =hamming    Hamming window                                  ",
+"       =blackman   Blackman window                                 ",
 " verbose=0         no advisory messages                            ",
 "         1         for advisory messages                           ",
 "                                                                   ",
@@ -43,10 +48,11 @@ NULL};
 /**************** end self doc ***********************************/
 
 
-#define REAL    1
-#define IMAG    2
-#define AMP     3
-#define ARG     4
+#define CPLX    1
+#define REAL    2
+#define IMAG    3
+#define AMP     4
+#define ARG     5
 
 segy tr;
 
@@ -56,9 +62,11 @@ main(int argc, char **argv)
     float dt;
     int nwin;
     cwp_String mode;
-    int imode=AMP;
+    int imode=CPLX;
     int verbose;
-
+    cwp_String window;
+    sux_Window iwind = None;
+    
     int nt;
     float df;
     int tracr=0;
@@ -67,8 +75,8 @@ main(int argc, char **argv)
     int nf;
     int i,j;
     cwp_Bool seismic;
+    hSDFT dftHandle;
     complex** specbuff;
-    complex* cfactors;
 	
 /* Initialize */
 	initargs(argc, argv);
@@ -88,19 +96,26 @@ main(int argc, char **argv)
         if (verbose)
             warn("adjusting nwin to be odd, was %d now %d",nwin-1, nwin);
     }
-    if (!getparstring("mode", &mode))	mode = "amp";
+    if (!getparstring("mode", &mode))	mode = "complex";
     
     if      (STREQ(mode, "phase")) imode = ARG;
     else if (STREQ(mode, "real"))  imode = REAL;
     else if (STREQ(mode, "imag"))  imode = IMAG;
-    else if (!STREQ(mode, "amp"))
+    else if (STREQ(mode, "amp"))  imode = AMP;
+    else if (!STREQ(mode, "complex"))
         err("unknown mode=\"%s\", see self-doc", mode);
+
+    if (!getparstring("window", &window)) window = "none";
+    if      (STREQ(window, "hann")) iwind = Hann;
+    else if (STREQ(window, "hamming")) iwind = Hamming;
+    else if (STREQ(window, "blackman")) iwind = Blackman;
+    else if (!STREQ(window, "none")) 
+        err("unknown window=\"%s\", see self-doc", window);
     
 /* Set up DFT parameters and workspaces */
     df = 1.0/(nwin*dt);
     nf = nwin/2+1;
-    cfactors = ealloc1complex(nf);
-    initSDFT(nwin, cfactors);
+    dftHandle = SDFT_init(nwin, nt);
     specbuff = ealloc2complex(nt, nf );
     
 /* Main processing loop */
@@ -111,11 +126,20 @@ main(int argc, char **argv)
                 warn("ignoring input trace=%d with non-seismic trcid=%d", tr.tracl, tr.trid);
             continue;
         }
-        SDFT( nt, nwin, tr.data, cfactors, specbuff );
+        SDFT( dftHandle, iwind, tr.data, specbuff );
         
         tracr = 0;
         for ( i=0; i<nf; i++ ) {
+            tr.ns = nt;
             switch (imode) {
+                case CPLX:
+                    for (j=0; j<nt; j++) {
+                        tr.data[2*j] = specbuff[i][j].r;
+                        tr.data[2*j+1] = specbuff[i][j].i;
+                    }
+                    tr.trid = FUNPACKNYQ;
+                    tr.ns = 2 * nt;
+                    break;
                 case REAL:
                     for (j=0; j<nt; j++) 
                         tr.data[j] = specbuff[i][j].r;
@@ -155,7 +179,7 @@ main(int argc, char **argv)
         }
     } while (gettr(&tr));
                 
-    free1complex( cfactors );
+    SDFT_free(dftHandle);
     free2complex( specbuff );
 
     return (CWP_Exit());

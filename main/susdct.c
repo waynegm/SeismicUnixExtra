@@ -92,7 +92,7 @@ main(int argc, char **argv)
 /* Set up DCT parameters and workspaces */
     df = 1.0/(2.0*nwin*dt);
     nf = nwin;
-    dctHandle = initSDCT( nwin, nt );
+    dctHandle = SDCT_init( nwin, nt );
     specbuff = ealloc2float(nt, nf );
     
 /* Main processing loop */
@@ -118,7 +118,7 @@ main(int argc, char **argv)
         }
     } while (gettr(&tr));
                 
-    destroySDCT(dctHandle);
+    SDCT_free(dctHandle);
     free2float( specbuff );
 
     return (CWP_Exit());

@@ -9,6 +9,7 @@ LFLAGS= $(PRELFLAGS) -L$L -lsux -lsu -lpar -lcwp -lm $(POSTLFLAGS)
 
 PROGS =			\
 	$B/susdft	\
+	$B/suisdft	\
 	$B/susdct	\
 	$B/suisdct
 
