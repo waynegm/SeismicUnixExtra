@@ -1,9 +1,9 @@
-#SeismicUnixExtra
+# SeismicUnixExtra
 My addons to the [Seismic Unix](http://www.cwp.mines.edu/cwpcodes/) seismic processing package
 
-##Functionality
+## Functionality
 
-###Transforms
+### Transforms
 
 | Program | Description                                |
 | ------- | ------------------------------------------ |
@@ -12,7 +12,7 @@ My addons to the [Seismic Unix](http://www.cwp.mines.edu/cwpcodes/) seismic proc
 | susdft  | Sliding discrete fourier transform         |
 | suisfdt | Inverse sliding discrete fourier transform | 
 
-##Installation
+## Installation
   * Install and build Seismic Unix if you haven't already done so in a folder with write access for the user building this software.
   * Make sure the CWPROOT environment variable is set
   * Download and extract the GitHub repository
