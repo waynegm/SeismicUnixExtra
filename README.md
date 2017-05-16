@@ -1,5 +1,7 @@
 # SeismicUnixExtra
-My addons to the [Seismic Unix](http://www.cwp.mines.edu/cwpcodes/) seismic processing package
+My addons to the [Seismic Unix](http://www.cwp.mines.edu/cwpcodes/) seismic processing package. 
+
+Access the [documentation](https://waynegm.github.io/SeismicUnixExtra/) for more informations.
 
 ## Functionality
 
