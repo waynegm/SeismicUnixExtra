@@ -8,7 +8,8 @@ LIB = $L/libsux.a
 
 ARCH =			\
 	$(LIB)(sdft.o)	\
-	$(LIB)(sdct.o)
+	$(LIB)(sdct.o)	\
+	$(LIB)(otrcbuf.o)
 
 INSTALL:	$(LIB) $L
 	@-rm -f INSTALL

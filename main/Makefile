@@ -11,7 +11,8 @@ PROGS =			\
 	$B/susdft	\
 	$B/suisdft	\
 	$B/susdct	\
-	$B/suisdct
+	$B/suisdct	\
+	$B/sutrcmedian
 
 
 INSTALL	:	$(PROGS)
