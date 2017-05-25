@@ -41,7 +41,7 @@ main(int argc, char **argv)
     int nsamples;
     cwp_Bool seismic;
     float* databuf;
-    hOTB otbHandle;
+    hCTB ctbHandle;
 	
 // Initialize
 	initargs(argc, argv);
@@ -72,21 +72,21 @@ main(int argc, char **argv)
     
 // Set up trace buffer and work space
     databuf = ealloc1float( ntr );
-    otbHandle = OTB_init( ntr, nsamples );
+    ctbHandle = CTB_init( ntr, nsamples );
 /* Main processing loop */
     do {
         seismic = ISSEISMIC(tr.trid);
         if (seismic) {
-            if (OTB_push( otbHandle, &tr )) {
-                tcount = OTB_traces(otbHandle);
+            if (CTB_push(ctbHandle, &tr)) {
+                tcount = CTB_traces(ctbHandle);
                 imed = tcount/2;
                 for (is=0; is<nsamples; is++) {
-                    int icur = OTB_getSlice( otbHandle, is, databuf );
+                    int icur = CTB_getSlice( ctbHandle, is, databuf );
                     float curval = databuf[icur];
                     qkfind( imed, tcount, databuf );
                     tr.data[is] = (mode==1)? curval - databuf[imed]: databuf[imed];
                 }
-                OTB_copyCurrentHdr( otbHandle, &tr );
+                CTB_copyCurrentHdr( ctbHandle, &tr );
                 puttr(&tr);
             }
         } else 
@@ -94,22 +94,22 @@ main(int argc, char **argv)
     } while (gettr(&tr));
 
 /* Handle last traces in buffer */
-    while (OTB_push( otbHandle, 0 )) {
-        tcount = OTB_traces(otbHandle);
+    while(CTB_push(ctbHandle, 0)) {
+        tcount = CTB_traces(ctbHandle);
         imed = tcount/2;
         float curval;
         for (is=0; is<nsamples; is++) {
-            int icur = OTB_getSlice( otbHandle, is, databuf );
+            int icur = CTB_getSlice( ctbHandle, is, databuf );
             curval = databuf[icur];
             qkfind( imed, tcount, databuf);
             tr.data[is] = (mode==1)? curval - databuf[imed]: databuf[imed];
         }
-        OTB_copyCurrentHdr( otbHandle, &tr );
+        CTB_copyCurrentHdr( ctbHandle, &tr );
         puttr(&tr);
     };
 
     free1(databuf);
-    OTB_free( otbHandle );
+    CTB_free( ctbHandle );
 
     return EXIT_SUCCESS;
 }

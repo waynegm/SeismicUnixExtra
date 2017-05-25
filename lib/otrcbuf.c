@@ -18,8 +18,7 @@ Function Prototypes:
 hOTB OTB_init(int ntraces, int nsamples);
 void OTB_free(hOTB h);
 int OTB_traces(hOTB h);
-int OTB_ready(hOTB h);
-void OTB_push(hOTB h, const seg* const tr);
+int OTB_push(hOTB h, const seg* const tr);
 void OTB_copyCurrentHdr(hOTB h, segy* const tr);
 int OTB_getSlice(hOTB h, int isample, float* const data);
 const float** const OTB_getData(hOTB h);
@@ -45,18 +44,13 @@ h           trace buffer handle created by OTB_init
 Returned:   number of traces currrently in the trace buffer
 
 ************************************************************************** 
-OTB_ready:
-Input:
-h           trace buffer handle created by OTB_init
-
-Returned:   1 if sufficient number of traces in buffer (ie >ntraces/2),
-            0 otherwise
-
-************************************************************************** 
 OTB_push:
 Input:
 h           trace buffer handle created by OTB_init
 tr          pointer to a seg Y trace to add to the buffer
+
+Returned:   1 if sufficient number of traces in buffer for processing (ie >ntraces/2),
+            0 otherwise
 
 ************************************************************************** 
 OTB_copyCurrentHdr:
@@ -145,11 +139,7 @@ int OTB_traces( hOTB h ) {
     return h ? h->ltr - h->ftr + 1: 0;
 }
 
-int OTB_ready(hOTB h) {
-    return h->ltr > h->ntr/2 && h->ftr <= h->ntr/2;
-}
-
-void OTB_push( hOTB h, const segy* const tr ) {
+int OTB_push( hOTB h, const segy* const tr ) {
     if (h) {
         int ntr = h->ntr;
         int ns = h->ns;
@@ -161,9 +151,11 @@ void OTB_push( hOTB h, const segy* const tr ) {
             memcpy( (void*)&(data[ntr-1][0]), (void*) tr->data, ns*FSIZE );
             memcpy( (void*)&(h->hdrs[ntr-1]), (void*) tr, HDRBYTES );
         } else
-            h->ltr = (h->ltr>ntr/2)? h->ltr-1 : h->ltr;
+            h->ltr--;
+//            h->ltr = (h->ltr>ntr/2)? h->ltr-1 : h->ltr;
     } else
         err("bad pointer in OTB_push.");
+    return h->ltr >= h->ntr/2 && h->ftr <= h->ntr/2;
 }
 
 void OTB_copyCurrentHdr( hOTB h, segy* const tr ) {
@@ -176,7 +168,8 @@ void OTB_copyCurrentHdr( hOTB h, segy* const tr ) {
 int OTB_getSlice( hOTB h, int isample, float* const data ) {
     if (h && data) {
         if (h->ltr>=h->ntr/2) {
-            for (int itrc=0; itrc<OTB_traces(h); itrc++ )
+            int nt = OTB_traces(h);
+            for (int itrc=0; itrc<nt; itrc++ )
                 data[itrc] = h->data[itrc+h->ftr][isample];
             return h->ntr/2-h->ftr;
         } else {

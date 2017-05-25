@@ -31,19 +31,17 @@ void SDCT_free( hSDCT handle );
 typedef struct _OTB *hOTB;
 hOTB OTB_init( int ntraces, int nsamples );
 int OTB_traces( hOTB h );
-int OTB_ready( hOTB h );
-void OTB_push( hOTB h, const segy* const tr );
+int OTB_push( hOTB h, const segy* const tr );
 void OTB_copyCurrentHdr( hOTB h, segy* const tr );
 int OTB_getSlice( hOTB h, int isample, float* const data );
 const float** const OTB_getData( hOTB h );
 void OTB_free( hOTB h );
 
-/* Circular Trace buffer for seg Y trace data */
+/* Cyclic Trace buffer for seg Y trace data */
 typedef struct _CTB *hCTB;
 hCTB CTB_init( int ntraces, int nsamples );
 int CTB_traces( hCTB h );
-int CTB_ready( hCTB h );
-void CTB_push( hCTB h, const segy* const tr );
+int CTB_push( hCTB h, const segy* const tr );
 void CTB_copyCurrentHdr( hCTB h, segy* const tr );
 int CTB_getSlice( hCTB h, int isample, float* const data );
 const float** const CTB_getData( hCTB h );
