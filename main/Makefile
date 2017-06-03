@@ -13,7 +13,8 @@ PROGS =			\
 	$B/susdct	\
 	$B/suisdct	\
 	$B/sutrcmedian	\
-	$B/suctrcmedian
+	$B/suctrcmedian \
+	$B/susdft_denoise 
 
 
 INSTALL	:	$(PROGS)

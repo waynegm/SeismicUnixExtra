@@ -47,19 +47,18 @@ int CTB_getSlice( hCTB h, int isample, float* const data );
 const float** const CTB_getData( hCTB h );
 void CTB_free( hCTB h );
 
-/* Circular buffer for multi-trace sliding discrete fourier transform */
-/*
+/* Cyclic buffer for multi-trace sliding discrete fourier transform */
 typedef struct _CBSDFT *hCBSDFT;
-hCBSDFT CBSDFT_init( int ntraces. int nsamples, int nwin, suxWindow window );
-size_t CBSDFT_traces( hCBSDFT h );
-size_t CBSDFT_samples( hCBSDFT h );
-size_t CBSDFT_size( hCBSDFT h );
-size_t CBSDFT_nfreq( hCBSDFT h );
-void   CBSDFT_push( hCBSDFT h, float* data );
-void   CBSDFT_getframe(  hCBSDFT h, int isample, int ifreq, complex* data );
-void   CBSDFT_setresult( hCBSDFT h, int isample, int ifreq, complex data );
-void   CBSDFT_getresult( hCBSDFT h, float* data );
-void CBSDFT_free( hCBSDFT );
-*/
+hCBSDFT CBSDFT_init( int ntraces, int nsamples, int nwin, sux_Window window );
+int     CBSDFT_traces( hCBSDFT h );
+int     CBSDFT_samples( hCBSDFT h );
+int     CBSDFT_size( hCBSDFT h );
+int     CBSDFT_nfreq( hCBSDFT h );
+int     CBSDFT_push( hCBSDFT h, const segy* const tr );
+int     CBSDFT_getSlice(  hCBSDFT h, int isample, int ifreq, complex* const data );
+void    CBSDFT_setResult( hCBSDFT h, int isample, int ifreq, complex data );
+void    CBSDFT_getResult( hCBSDFT h, segy* const tr );
+void    CBSDFT_free( hCBSDFT );
+
 #endif /* end of SUX_H */
 

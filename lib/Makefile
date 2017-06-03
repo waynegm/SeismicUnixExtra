@@ -10,7 +10,8 @@ ARCH =			\
 	$(LIB)(sdft.o)	\
 	$(LIB)(sdct.o)	\
 	$(LIB)(otrcbuf.o) \
-	$(LIB)(ctrcbuf.o)
+	$(LIB)(ctrcbuf.o) \
+	$(LIB)(cbsdft.o)
 
 INSTALL:	$(LIB) $L
 	@-rm -f INSTALL
