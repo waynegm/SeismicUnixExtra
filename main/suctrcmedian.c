@@ -8,18 +8,22 @@
 
 /*********************** self documentation **********************/
 char *sdoc[] = {
-"                                                                   ",
-" SUTRCMEDIAN - rolling median filter over a panel of seismic traces",
-"                                                                   ",
-" sutrcmedian <stdin >sdout                                         ",
-" Optional parameters:                                              ",
-" ntr=5         number (odd) of traces to compute median            ",
-" mode=0        output filtered trace                               ",
-"     =1        output estimated noise                              ",
-" verbose=0     no advisory messages                                ",
-"         1     for advisory messages                               ",
-"                                                                   ",
-"                                                                   ",
+"# SUCTRCMEDIAN ",
+"Rolling median filter over a panel of seismic traces by a cyclic trace buffer ",
+" ",
+"## Usage ",
+"   suctrcmedian < stdin > stdout ",
+" ",
+"### Optional Parameters ",
+"| Parameter | Description                                     | Default       |",
+"|:---------:| ----------------------------------------------- |:-------------:|",
+"| ntr=      | number (odd) of traces in filter panel          | 5             |",
+"| mode=     | =0 output filtered trace, =1 output noise       | 0             |",
+"| verbose=  | =0 no advisory messages, =1 for messages        | 0             |",
+" ",
+"## Notes ",
+"This is primarily a demonstation and test platform for the cyclic trace buffer implementation. ",
+" ",
 NULL};
 
 /* Author: Wayne Mogg, May 2017

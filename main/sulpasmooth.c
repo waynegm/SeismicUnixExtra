@@ -8,21 +8,18 @@
 
 /*********************** self documentation **********************/
 char *sdoc[] = {
-"# SUTRCMEDIAN ",
-"Rolling median filter over a panel of seismic traces by an ordered trace buffer ",
-" ",
-"## Usage ",
-"   sutrcmedian < stdin > stdout ",
-"### Optional Parameters ",
+"# SULPASMOOTH                                                                  ",
+"Rolling LPA filter over a panel of seismic traces                              ",
+"                                                                               ",
+"## Usage                                                                       ",
+"   sulpasmooth < stdin > sdout [optional parameters]                           ",
+"                                                                               ",
+"### Optional Parameters                                                        ",
 "| Parameter | Description                                     | Default       |",
 "|:---------:| ----------------------------------------------- |:-------------:|",
-"| ntr=      | number (odd) of traces in filter panel          | 5             |",
 "| mode=     | =0 output filtered trace, =1 output noise       | 0             |",
 "| verbose=  | =0 no advisory messages, =1 for messages        | 0             |",
-" ",
-"## Notes ",
-"This is primarily a demonstation and test platform for the ordered trace buffer implementation. ",
-" ",
+"                                                                               ",
 NULL};
 
 /* Author: Wayne Mogg, May 2017
@@ -36,14 +33,15 @@ segy tr;
 int
 main(int argc, char **argv)
 {
-    int ntr;
+    int nsize=5;
+    int ntr = nsize;
     int mode;
     int verbose;
 
-    int is, tcount, imed;
+    int is;
     int nsamples;
     cwp_Bool seismic;
-    float* databuf;
+    float** db;
     hOTB otbHandle;
 	
 // Initialize
@@ -64,30 +62,26 @@ main(int argc, char **argv)
         err("zero length traces not allowed.");
     
 // Get parameters
-    if (!getparint("ntr", &ntr)) ntr = 5;
-    if (!ntr%2) {
-        ntr++;
-        if (verbose)
-            warn("adjusting ntr to be odd, was %d now %d",ntr-1, ntr);
-    }
     if (!getparint("mode", &mode)) mode = 0;
     if (!getparint("verbose", &verbose)) verbose=0;
     
 // Set up trace buffer and work space
-    databuf = ealloc1float( ntr );
+    db = ealloc2float( nsize, ntr );
     otbHandle = OTB_init( ntr, nsamples );
 /* Main processing loop */
     do {
         seismic = ISSEISMIC(tr.trid);
         if (seismic) {
             if (OTB_push( otbHandle, &tr )) {
-                tcount = OTB_traces(otbHandle);
-                imed = tcount/2;
                 for (is=0; is<nsamples; is++) {
-                    int icur = OTB_getSlice( otbHandle, is, databuf );
-                    float curval = databuf[icur];
-                    qkfind( imed, tcount, databuf );
-                    tr.data[is] = (mode==1)? curval - databuf[imed]: databuf[imed];
+                    OTB_getSlab(otbHandle, is, nsize, db);
+                    float outval = (-13*(db[0][0]+db[4][0]+db[0][4]+db[4][4])+
+                                    2*(db[1][0]+db[3][0]+db[0][1]+db[4][1]+db[0][3]+db[4][3]+db[1][4]+db[3][4])+
+                                    7*(db[2][0]+db[0][2]+db[4][2]+db[2][4])+
+                                   17*(db[1][1]+db[3][1]+db[1][3]+db[3][3])+
+                                   22*(db[2][1]+db[2][3]+db[1][2]+db[3][2])+
+                                   27*db[2][2])/175;
+                    tr.data[is] = (mode==1)? db[nsize/2][nsize/2] - outval: outval;
                 }
                 OTB_copyCurrentHdr( otbHandle, &tr );
                 puttr(&tr);
@@ -98,20 +92,21 @@ main(int argc, char **argv)
 
 /* Handle last traces in buffer */
     while (OTB_push( otbHandle, 0 )) {
-        tcount = OTB_traces(otbHandle);
-        imed = tcount/2;
-        float curval;
         for (is=0; is<nsamples; is++) {
-            int icur = OTB_getSlice( otbHandle, is, databuf );
-            curval = databuf[icur];
-            qkfind( imed, tcount, databuf);
-            tr.data[is] = (mode==1)? curval - databuf[imed]: databuf[imed];
+            OTB_getSlab(otbHandle, is, nsize, db);
+            float outval = (-13*(db[0][0]+db[4][0]+db[0][4]+db[4][4])+
+            2*(db[1][0]+db[3][0]+db[0][1]+db[4][1]+db[0][3]+db[4][3]+db[1][4]+db[3][4])+
+            7*(db[2][0]+db[0][2]+db[4][2]+db[2][4])+
+            17*(db[1][1]+db[3][1]+db[1][3]+db[3][3])+
+            22*(db[2][1]+db[2][3]+db[1][2]+db[3][2])+
+            27*db[2][2])/175;
+            tr.data[is] = (mode==1)? db[nsize/2][nsize/2] - outval: outval;
         }
         OTB_copyCurrentHdr( otbHandle, &tr );
         puttr(&tr);
     };
 
-    free1(databuf);
+    free2float(db);
     OTB_free( otbHandle );
 
     return EXIT_SUCCESS;

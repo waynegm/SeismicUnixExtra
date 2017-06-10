@@ -14,17 +14,21 @@ PROGS =			\
 	$B/suisdct	\
 	$B/sutrcmedian	\
 	$B/suctrcmedian \
-	$B/susdft_denoise 
-
+	$B/susdft_denoise \
+	$B/sulpasmooth	
 
 INSTALL	:	$(PROGS)
 	@-rm -f INSTALL
+	@cat ../Stub.md ../programs.md >../README.md 
+	@rm ../programs.md
 	@touch $@
 
 
 $(PROGS):	$(CTARGET) $D 
 	-$(CC) $(CFLAGS) $(@F).c $(LFLAGS) -o $@
 	@$(MCHMODLINE)
+	@-$(@F) 2> ../docs/$(@F).md
+	@echo \| [$(@F)]'(docs/'$(@F)'.md)' \| $(shell $(@F) 2>&1|head -n 2|tail -n 1) \| >> ../programs.md
 	@echo $(@F) installed in $B
 
 remake	:

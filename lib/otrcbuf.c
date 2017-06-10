@@ -187,3 +187,25 @@ const float** const OTB_getData( hOTB h ) {
         err("bad pointer in OTB_getData.");
 }
 
+void OTB_getSlab( hOTB h, int isample, int size, float** const data) {
+    if (h && data) {
+        for (int itrc=0; itrc<h->ntr; itrc++) {
+            int utrc = itrc;
+            if (itrc < h->ftr)
+                utrc = h->ftr;
+            else if (itrc>h->ltr)
+                utrc = h->ltr;
+            for (int is=0; is<size; is++) {
+                int idx = isample+is-size/2;
+                if (idx<0) 
+                    data[itrc][is] = h->data[utrc][0];
+                else if (idx>=h->ns)
+                    data[itrc][is] = h->data[utrc][h->ns-1];
+                else
+                    data[itrc][is] = h->data[utrc][isample+is-size/2];
+            }
+        }
+    } else
+        err("bad pointer in OTB_getSlab.");
+}
+

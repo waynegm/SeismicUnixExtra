@@ -35,6 +35,7 @@ int OTB_push( hOTB h, const segy* const tr );
 void OTB_copyCurrentHdr( hOTB h, segy* const tr );
 int OTB_getSlice( hOTB h, int isample, float* const data );
 const float** const OTB_getData( hOTB h );
+void OTB_getSlab( hOTB h, int isample, int size, float** const data );
 void OTB_free( hOTB h );
 
 /* Cyclic Trace buffer for seg Y trace data */
