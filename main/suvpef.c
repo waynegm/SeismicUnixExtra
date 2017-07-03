@@ -10,7 +10,7 @@
 /****************************** self documentation ******************************/
 char *sdoc[] = {
 "# SUVPEF ",
-"Wiener (least squares) predictive error filtering with spatially varying lag ",
+"Wiener predictive error filtering with spatially varying lag ",
 " ",
 "## Usage ",
 "   suvpef < stdin > stdout  [optional parameters] ",
@@ -36,9 +36,9 @@ char *sdoc[] = {
 "Trace header fields modified: none                                             ",
 "                                                                               ",
 "## Notes                                                                       ",
-"For fixed lag omit the key= and xlag= parameters and give a single lag= value. ",
-"For spatially variable lag specify key=, xlag= and lag= arrays.                ",
-"Linear interpolation and constant extrapolation used to compute lag from the ",
+"- For fixed lag omit the key= and xlag= parameters and give a single lag= value. ",
+"- For spatially variable lag specify key=, xlag= and lag= arrays.                ",
+"- Linear interpolation and constant extrapolation used to compute lag from the ",
 "arrays.                                                                        ",
 "                                                                               ",
 "This is a simplified version of supef                                          ",                                                                               
@@ -85,17 +85,20 @@ main(int argc, char **argv)
 /* Get info from first trace */ 
     if (!gettr(&intrace)) err("can't get first trace");
     ns = intrace.ns;
-    if (!getparfloat("dt", &dt))	dt = ((double) tr.dt)/1000000.0;
+    if (!getparfloat("dt", &dt))	dt = ((double) intrace.dt)/1000000.0;
     if (!dt) err("dt field is zero and not getparred");
 
 /* Get parameters */
     if (!getparint("verbose", &verbose)) verbose=0;
     if (!getparstring("key", &key)) key="cdp";
     nlag = countparval("xlag");
-    if (nlag>0)
-        if (countparname("lag")!=nlag) err("a lag value must be given for each %s in xlag=", key);
-    else
+    if (nlag>0) {
+        if (countparval("lag")!=nlag)
+            err("a lag value must be given for each %s in xlag=", key);
+    }
+    else {
         nlag = 1;
+    }
     xlag = ealloc1float(nlag);
     if (!getparfloat("xlag",xlag)) xlag[0] = intrace.cdp;
     lag = ealloc1float(nlag);
@@ -120,8 +123,8 @@ main(int argc, char **argv)
     } else
         imaxcorr = ns;
     
-    if (!getparfloat("pnoise", &pnoise) pnoise = 0.001;
-    if (!getparfloat("len", &len) len = (float) ns*dt/20
+    if (!getparfloat("pnoise", &pnoise)) pnoise = 0.001;
+    if (!getparfloat("len", &len)) len = (float) ns*dt/20;
     ilen = NINT(len/dt);
 
 /* Get key type and index */
@@ -143,13 +146,14 @@ main(int argc, char **argv)
         seismic = ISSEISMIC(intrace.trid);
         if (!seismic) {
             if (verbose)
-                warn("ignoring input trace=%d with non-seismic trcid=%d", tr.tracl, tr.trid);
+                warn("ignoring input trace=%d with non-seismic trcid=%d", intrace.tracl, intrace.trid);
             continue;
         }
         gethval(&intrace, keyIndex, &keyVal);
         val = vtof(keyType, keyVal);
         
-        float filtlag = linterp(nlag, xlag, lag, val);
+        float filtlag;
+        intlin(nlag, xlag, lag, lag[0], lag[nlag-1], 1, &val, &filtlag );
         ilag = NINT(filtlag/dt);
         lcorr = ilag + ilen + 1;
         crosscorr = autocorr + ilag;
@@ -161,7 +165,6 @@ main(int argc, char **argv)
 
 /* Form autocorrelation vector */
         xcor(ncorr, imincorr, intrace.data, ncorr, imincorr, intrace.data, lcorr, 0, autocorr);
-
 /* Leave trace alone if autocorr[0] vanishes */
         if (autocorr[0] == 0.0) {
             puttr(&intrace);
@@ -175,9 +178,9 @@ main(int argc, char **argv)
         stoepf(ilen, autocorr, crosscorr, wiener, spiker);
 
 /* Convolve pefilter with trace - don't do zero multiplies */
-        for (int i = 0; i < nt; ++i) {
+        for (int i = 0; i < ns; ++i) {
             register int j;
-            register int n = MIN(i, ilag); 
+            register int n = MIN(i, ilag+ilen); 
             register float sum = intrace.data[i];
 
             for (j = ilag; j <= n; ++j)

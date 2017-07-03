@@ -15,7 +15,8 @@ PROGS =			\
 	$B/sutrcmedian	\
 	$B/suctrcmedian \
 	$B/susdft_denoise \
-	$B/sulpasmooth	
+	$B/sulpasmooth \
+	$B/suvpef
 
 INSTALL	:	$(PROGS)
 	@-rm -f INSTALL
@@ -30,8 +31,8 @@ $(PROGS):	$(CTARGET) $D
 	-$(CC) $(CFLAGS) $(@F).c $(LFLAGS) -o $@
 	@$(MCHMODLINE)
 	@-$(@F) 2> ../docs/$(@F).md
-	@echo \| [$(@F)]'(docs/'$(@F)'.md)' \| $(shell $(@F) 2>&1|head -n 2|tail -n 1) \| >> ../programs.md
-	@echo \| [$(@F)]'('$(@F)'.md)' \| $(shell $(@F) 2>&1|head -n 2|tail -n 1) \| >> ../docs/programs.md
+	@echo \| [$(@F)]"(docs/"$(@F)".md)" \| $(shell $(@F) 2>&1|head -n 2|tail -n 1) \| >> ../programs.md
+	@echo \| [$(@F)]"("$(@F)".md)" \| $(shell $(@F) 2>&1|head -n 2|tail -n 1) \| >> ../docs/programs.md
 	@echo $(@F) installed in $B
 
 remake	:

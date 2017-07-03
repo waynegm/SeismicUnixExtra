@@ -22,3 +22,4 @@ This should compile and install all programs into your seismic unix installation
 | [suctrcmedian](suctrcmedian.md) | Rolling median filter over a panel of seismic traces by a cyclic trace buffer |
 | [susdft_denoise](susdft_denoise.md) | Time-frequency denoise over a panel of seismic traces using the sliding discrete fourier transform |
 | [sulpasmooth](sulpasmooth.md) | Rolling LPA filter over a panel of seismic traces |
+| [suvpef](suvpef.md) | Wiener predictive error filtering with spatially varying lag |
